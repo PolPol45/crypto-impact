@@ -1,0 +1,277 @@
+
+<style>
+* { box-sizing: border-box; }
+.tab-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+.tab { cursor: pointer; padding: 7px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); font-size: 12px; font-weight: 500; background: transparent; color: var(--color-text-secondary); transition: all 0.15s; }
+.tab.active { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; }
+.section-block { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px 18px; margin-bottom: 12px; }
+.section-block.highlight { border-left: 3px solid var(--color-border-info); }
+.block-num { display: inline-block; font-size: 11px; font-weight: 500; background: var(--color-background-secondary); color: var(--color-text-tertiary); padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.block-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+.block-subtitle { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 10px; font-style: italic; }
+.content-row { font-size: 12px; color: var(--color-text-primary); padding: 4px 0; display: flex; gap: 8px; align-items: flex-start; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.content-row:last-child { border-bottom: none; }
+.dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.meta-pill { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 20px; background: var(--color-background-secondary); color: var(--color-text-tertiary); border: 0.5px solid var(--color-border-tertiary); margin: 2px 2px 0 0; }
+.source-tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+.src-jpm { background: var(--color-background-warning); color: var(--color-text-warning); }
+.src-gs { background: var(--color-background-info); color: var(--color-text-info); }
+.src-cs { background: var(--color-background-success); color: var(--color-text-success); }
+.src-all { background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); }
+.tip-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 12px; color: var(--color-text-secondary); margin-top: 10px; border-left: 2px solid var(--color-border-success); }
+.format-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 12px; }
+.format-row:last-child { border-bottom: none; }
+.format-key { font-weight: 500; color: var(--color-text-primary); min-width: 130px; flex-shrink: 0; }
+.format-val { color: var(--color-text-secondary); }
+.btn-sm { background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 7px 14px; font-size: 12px; cursor: pointer; color: var(--color-text-primary); transition: all 0.15s; margin-top: 12px; display: inline-block; }
+.btn-sm:hover { background: var(--color-background-secondary); }
+#tab-content { min-height: 200px; }
+</style>
+
+<div style="padding: 1rem 0;">
+  <div class="tab-bar">
+    <button class="tab active" onclick="showTab('structure')">Struttura del report</button>
+    <button class="tab" onclick="showTab('format')">Formato del file</button>
+    <button class="tab" onclick="showTab('writing')">Come scrivere</button>
+    <button class="tab" onclick="showTab('data')">Dati da usare</button>
+    <button class="tab" onclick="showTab('examples')">Standard per sezione</button>
+  </div>
+
+  <div id="tab-content"></div>
+</div>
+
+<script>
+const tabs = {
+
+structure: `
+<div class="section-block highlight">
+  <div class="block-num">COVER PAGE</div>
+  <div class="block-title">Copertina + Header istituzionale</div>
+  <div class="block-subtitle">La prima cosa che vede il recruiter — deve sembrare un vero research report</div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>Titolo:</strong> "Digital Assets in Institutional Portfolios: Allocation, Macro Regimes & On-Chain Risk Signals"</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>Sottotitolo:</strong> "A Multi-Dimensional Framework for Portfolio Managers and Risk Committees"</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>Nome autore, data, "Independent Research / NUS Master in Management"</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>Disclaimer breve (standard per ogni research report istituzionale)</span></div>
+  <span class="source-tag src-all">Standard JPM + GS + CoinShares</span>
+</div>
+
+<div class="section-block highlight">
+  <div class="block-num">SECTION 1 — 1 PAGINA</div>
+  <div class="block-title">Executive Summary</div>
+  <div class="block-subtitle">Il pezzo più letto. Un investment committee legge SOLO questo se non ha tempo</div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>Research question</strong> in 1 frase: "What is the optimal allocation to BTC/ETH in a diversified institutional portfolio, and under which macro regimes does this allocation provide genuine diversification benefits?"</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>Key findings</strong> — 3 bullet points numerici (es. "A 4% BTC allocation increases Sharpe ratio by X% over the period 2018–2025")</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>Investment implications</strong> — 2 frasi: cosa dovrebbe fare un portfolio manager sulla base di questa analisi</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>Caveats</strong> — 1 frase su limitazioni e rischi</span></div>
+  <div class="tip-box">⚡ Standard JPMorgan: ogni nota di ricerca inizia con un "Bottom Line Up Front" (BLUF) — la conclusione prima dell'analisi. Non scrivere come un paper accademico.</div>
+</div>
+
+<div class="section-block">
+  <div class="block-num">SECTION 2 — 2–3 PAGINE</div>
+  <div class="block-title">Background & Market Context</div>
+  <div class="block-subtitle">Perché questo tema è rilevante adesso</div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>Crescita istituzionale crypto: ETF BTC ($115B AUM, 2025), ETH ETF ($20B+), hedge fund adoption</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>Quadro regolatorio post-2024: MiCA (EU), FIT21 Act (USA), GENIUS Act (stablecoins 2025)</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>BTC come asset class emergente: market cap $1.7T, correlazioni in evoluzione con S&P (0.68 → 0.42)</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>Gap nella letteratura: la maggior parte degli studi pre-2024 — manca l'analisi del ciclo post-ETF</span></div>
+  <span class="source-tag src-gs">Goldman Sachs 2026</span> <span class="source-tag src-cs">CoinShares</span>
+</div>
+
+<div class="section-block">
+  <div class="block-num">SECTION 3 — 2 PAGINE</div>
+  <div class="block-title">Data & Methodology</div>
+  <div class="block-subtitle">La sezione che dimostra rigore — ogni scelta deve essere giustificata</div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span><strong>Data sources:</strong> CoinGecko (BTC/ETH), Yahoo Finance (S&P, Gold, DXY, AGG), FRED (CPI, Fed Funds, T-Bill)</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span><strong>Time period:</strong> Jan 2018 – Mar 2026 (ciclo completo: 2 bull, 2 bear, post-ETF regime)</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span><strong>Benchmark portfolio:</strong> 60% SPY + 40% AGG (standard istituzionale — usato da VanEck, 21Shares, Fidelity)</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span><strong>Metriche:</strong> Sharpe, Sortino, Calmar, Max Drawdown, VaR 95%, CVaR — giustifica perché Sortino > Sharpe per asset asimmetrici</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span><strong>Ottimizzazione:</strong> Mean-variance (Markowitz) + rolling 12-mese + Monte Carlo 10.000 simulazioni</span></div>
+  <span class="source-tag src-jpm">Standard JPMorgan</span>
+</div>
+
+<div class="section-block highlight">
+  <div class="block-num">SECTION 4 — 4–5 PAGINE + CHART</div>
+  <div class="block-title">Module 1: Portfolio Optimization & Efficient Frontier</div>
+  <div class="block-subtitle">Il cuore quantitativo — parla al portfolio manager</div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>Efficient frontier con e senza BTC/ETH — grafico obbligatorio (scatter con curva)</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>Sharpe ratio vs allocazione BTC (0–10%, step 1%) — mostra il punto di ottimo</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>Tabella comparativa: Sharpe, Sortino, Max DD per ogni allocazione 0–10%</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>Rolling Sharpe 12M — mostra stabilità nel tempo dell'allocazione ottimale</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>Rebalancing analysis: mensile vs trimestrale vs annuale (21Shares standard)</span></div>
+  <div class="tip-box">Trova trovato: VanEck (2024) → ottimale 3% BTC + 3% ETH. ARK (2025) → Sortino suggerisce allocazioni più alte. Il tuo contributo: dati aggiornati a 2026 con il ciclo post-ETF inclusion.</div>
+</div>
+
+<div class="section-block highlight">
+  <div class="block-num">SECTION 5 — 3–4 PAGINE + CHART</div>
+  <div class="block-title">Module 2: Macro Regime Analysis & Correlation Dynamics</div>
+  <div class="block-subtitle">Parla al risk manager e al macro PM</div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>Definizione dei 4 regimi: Risk-On / Risk-Off / Inflation Shock / Rate Hike cycle (con date)</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>Rolling 90-day correlation matrix: BTC/ETH vs S&P, Gold, DXY, AGG, VIX</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>Correlation heatmap per regime — la domanda chiave: la diversificazione regge nelle crisi?</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>BTC/S&P correlation evolution chart: da 0.68 (2020) → 0.42 (2023) → ? (2025–26)</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>Implicazione: "crypto diversification benefit is regime-dependent, not structural"</span></div>
+  <span class="source-tag src-jpm">Fidelity DA 2025</span>
+</div>
+
+<div class="section-block highlight">
+  <div class="block-num">SECTION 6 — 3 PAGINE + CHART</div>
+  <div class="block-title">Module 3: On-Chain Risk Indicators as Portfolio Signals</div>
+  <div class="block-subtitle">Differenziante unico — nessun paper istituzionale lo fa in modo quantitativo</div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span><strong>SOPR</strong> (Spent Output Profit Ratio): segnale di capitulation/euphoria — overlay su BTC price</span></div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span><strong>Realized Price</strong>: BTC prezzo medio di acquisto del mercato — supporto/resistenza chiave</span></div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span><strong>MVRV Z-score</strong>: overbought/oversold istituzionale — correlazione con drawdown >20%</span></div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span>Backtest: quanto avrebbe migliorato il risk-adjusted return usare SOPR come segnale di riduzione dell'allocazione?</span></div>
+  <span class="source-tag src-cs">CoinShares Research standard</span>
+</div>
+
+<div class="section-block">
+  <div class="block-num">SECTION 7 — 2 PAGINE</div>
+  <div class="block-title">Investment Implications & Framework Summary</div>
+  <div class="block-subtitle">La sezione action-oriented — cosa fa il portfolio manager lunedì mattina</div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span>Institutional scorecard: semaforo verde/giallo/rosso per ciascun segnale (allocation, regime, on-chain)</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span>Decision tree: quando aumentare / mantenere / ridurre l'esposizione crypto</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span>Scenario analysis: 3 scenari (base, bull, stress) con impatto sul portafoglio 60/40</span></div>
+</div>
+
+<div class="section-block">
+  <div class="block-num">SECTION 8 — 1 PAGINA</div>
+  <div class="block-title">Risks, Limitations & Further Research</div>
+  <div class="block-subtitle">Credibilità accademica — non saltarla</div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span>Survivorship bias, data snooping, liquidità crypto vs equities, regulatory tail risks</span></div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span>Limiti del Markowitz: assume rendimenti normali — crypto ha fat tails</span></div>
+</div>
+
+<div class="section-block">
+  <div class="block-num">APPENDIX</div>
+  <div class="block-title">Appendice tecnica + Bibliography</div>
+  <div class="block-subtitle">Link al GitHub, codice Python, tabelle statistiche complete</div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span>GitHub repo URL — con README, notebooks, requirements.txt</span></div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span>Full correlation tables, full return series statistics</span></div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span>VanEck, ARK, 21Shares, Fidelity, Grayscale — bibliography completa</span></div>
+</div>
+<button class="btn-sm" onclick="sendPrompt('Iniziamo a scrivere la Section 1 - Executive Summary della mia tesi di investimento su digital assets in institutional portfolios')">Scrivi l'Executive Summary ↗</button>
+`,
+
+format: `
+<div class="section-block">
+  <div class="block-title">Formato file — standard istituzionale</div>
+  <div class="format-row"><span class="format-key">Formato output</span><span class="format-val">PDF professionale (A4) — non Word, non slide. Un research report è sempre un PDF.</span></div>
+  <div class="format-row"><span class="format-key">Lunghezza totale</span><span class="format-val">18–25 pagine (senza appendice). JPMorgan reports: 20–30 pagine. CoinShares: 15–20 pagine.</span></div>
+  <div class="format-row"><span class="format-key">Font</span><span class="format-val">Times New Roman o Georgia per corpo testo (stile Bloomberg/JPM). Arial/Helvetica per tabelle e chart labels.</span></div>
+  <div class="format-row"><span class="format-key">Font size</span><span class="format-val">Titolo sezione: 14pt bold. Corpo: 11pt. Footnotes: 9pt. Chart labels: 9–10pt.</span></div>
+  <div class="format-row"><span class="format-key">Margini</span><span class="format-val">Top/Bottom 2.5cm, Left/Right 2.5cm. Header con titolo report + numero pagina in footer.</span></div>
+  <div class="format-row"><span class="format-key">Numerazione sezioni</span><span class="format-val">1. / 1.1 / 1.2 — non "Chapter One". Stile report bancario, non tesi universitaria.</span></div>
+  <div class="format-row"><span class="format-key">Grafici</span><span class="format-val">Ogni chart ha: titolo, fonte, nota metodologica sotto. No chart senza source note.</span></div>
+  <div class="format-row"><span class="format-key">Tabelle</span><span class="format-val">Header riga con sfondo grigio chiaro. No bordi pesanti. Font 10pt. Caption sopra la tabella.</span></div>
+  <div class="format-row"><span class="format-key">Cover page</span><span class="format-val">Titolo, autore, data, affiliation, disclaimer. Colore accent (blu scuro o navy) per header.</span></div>
+  <div class="format-row"><span class="format-key">TOC</span><span class="format-val">Table of Contents a pagina 2 con numeri di pagina — obbligatorio sopra le 15 pagine.</span></div>
+  <div class="format-row"><span class="format-key">Disclaimer</span><span class="format-val">"This report is for informational purposes only and does not constitute investment advice. Past performance is not indicative of future results."</span></div>
+</div>
+<div class="section-block">
+  <div class="block-title">Colori grafici — palette istituzionale</div>
+  <div class="format-row"><span class="format-key">BTC</span><span class="format-val">#F7931A (arancione Bitcoin) — riconoscibile</span></div>
+  <div class="format-row"><span class="format-key">ETH</span><span class="format-val">#627EEA (viola Ethereum)</span></div>
+  <div class="format-row"><span class="format-key">S&P 500</span><span class="format-val">#003087 (blu navy)</span></div>
+  <div class="format-row"><span class="format-key">Gold</span><span class="format-val">#D4AF37 (oro)</span></div>
+  <div class="format-row"><span class="format-key">Bonds/AGG</span><span class="format-val">#6B8E23 (verde oliva)</span></div>
+  <div class="format-row"><span class="format-key">Background grafici</span><span class="format-val">Bianco puro o grigio #F8F8F8. Mai nero o colorato.</span></div>
+</div>
+<button class="btn-sm" onclick="sendPrompt('Costruiamo il template Python per generare i grafici della tesi con la palette istituzionale corretta (matplotlib/seaborn)')">Template grafici Python ↗</button>
+`,
+
+writing: `
+<div class="section-block highlight">
+  <div class="block-title">Regola #1 — Bottom Line Up Front (BLUF)</div>
+  <div class="block-subtitle">Lo standard JPMorgan e Goldman Sachs: la conclusione prima dell'analisi</div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span><strong>❌ Stile accademico:</strong> "In this paper, we analyze Bitcoin returns from 2018 to 2025 using mean-variance optimization..."</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span><strong>✅ Stile istituzionale:</strong> "A 4% allocation to Bitcoin improves the Sharpe ratio of a 60/40 portfolio by 18% over our sample period. This benefit, however, is concentrated in risk-on regimes and largely disappears during equity stress events."</span></div>
+  <div class="tip-box">Il recruiter legge la prima frase di ogni sezione. Se la prima frase non dice la conclusione, non la legge.</div>
+</div>
+
+<div class="section-block">
+  <div class="block-title">Regola #2 — Ogni claim ha un numero</div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>❌</strong> "Bitcoin has shown improved diversification properties in recent years."</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span><strong>✅</strong> "The 90-day rolling correlation between BTC and the S&P 500 declined from 0.68 (Dec 2020) to 0.42 (Dec 2023), and reached 0.31 by Q1 2026 — its lowest reading since 2019."</span></div>
+</div>
+
+<div class="section-block">
+  <div class="block-title">Regola #3 — Tono: analitico neutro, non advocacy</div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span><strong>❌</strong> "Bitcoin is the future of finance and will replace gold as the ultimate store of value."</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span><strong>✅</strong> "The data suggests BTC exhibits gold-like properties during inflationary regimes (2021–2022) but equates more closely to risk assets during liquidity crises (Mar 2020, Nov 2022)."</span></div>
+  <div class="tip-box">Scrivere in inglese — è un differenziante enorme per ruoli internazionali. Il livello linguistico conta quanto l'analisi.</div>
+</div>
+
+<div class="section-block">
+  <div class="block-title">Regola #4 — Struttura paragrafo standard (PEEL)</div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>P</strong>oint — la tesi del paragrafo in 1 frase</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>E</strong>vidence — il dato o il risultato che la supporta</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>E</strong>xplanation — perché il dato supporta la tesi</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span><strong>L</strong>ink — connessione alla sezione successiva o implicazione per il portfolio manager</span></div>
+</div>
+
+<div class="section-block">
+  <div class="block-title">Regola #5 — Benchmark contro letteratura</div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span>Cita i paper istituzionali e di' esplicitamente se confermi, estendi o contraddi i loro risultati</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span>Es: "Consistent with VanEck (2024), we find that the optimal BTC allocation lies in the 3–5% range. However, using post-ETF data (2024–2026), we observe that this allocation has declined to 2–3% as crypto-equity correlations have increased."</span></div>
+</div>
+<button class="btn-sm" onclick="sendPrompt('Scrivi la bozza dell\\'Executive Summary completo della tesi in stile JPMorgan BLUF')">Scrivi Executive Summary ↗</button>
+`,
+
+data: `
+<div class="section-block">
+  <div class="block-title">Tutti i dati necessari — fonte e codice</div>
+  <div class="content-row"><div class="dot" style="background:#F7931A"></div><span><strong>BTC price, volume, market cap</strong> — CoinGecko API (gratuita) / yfinance BTC-USD</span><span class="meta-pill">Daily, 2018–2026</span></div>
+  <div class="content-row"><div class="dot" style="background:#627EEA"></div><span><strong>ETH price, volume</strong> — CoinGecko API / yfinance ETH-USD</span><span class="meta-pill">Daily</span></div>
+  <div class="content-row"><div class="dot" style="background:#003087"></div><span><strong>S&P 500</strong> — yfinance: ticker SPY o ^GSPC</span><span class="meta-pill">Daily</span></div>
+  <div class="content-row"><div class="dot" style="background:#D4AF37"></div><span><strong>Gold</strong> — yfinance: GLD o ^XAU</span><span class="meta-pill">Daily</span></div>
+  <div class="content-row"><div class="dot" style="background:#6B8E23"></div><span><strong>US Bonds (60/40 benchmark)</strong> — yfinance: AGG (iShares Core US Aggregate Bond ETF)</span><span class="meta-pill">Daily</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span><strong>DXY (Dollar Index)</strong> — yfinance: DX-Y.NYB</span><span class="meta-pill">Daily</span></div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span><strong>VIX (Fear Index)</strong> — yfinance: ^VIX</span><span class="meta-pill">Daily</span></div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span><strong>10Y Treasury Yield</strong> — yfinance: ^TNX o FRED: DGS10</span><span class="meta-pill">Daily</span></div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span><strong>3M T-Bill (risk-free rate)</strong> — FRED API: DTB3</span><span class="meta-pill">Daily</span></div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span><strong>CPI US</strong> — FRED API: CPIAUCSL</span><span class="meta-pill">Monthly</span></div>
+  <div class="content-row"><div class="dot" style="background:#888"></div><span><strong>Fed Funds Rate</strong> — FRED API: FEDFUNDS</span><span class="meta-pill">Monthly</span></div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span><strong>SOPR, MVRV Z-Score, Realized Price</strong> — Glassnode (free tier) o CryptoQuant</span><span class="meta-pill">On-chain, daily</span></div>
+  <div class="tip-box">Per il SOPR/MVRV: Glassnode ha un free tier che include i dati storici principali. Alternativa: LookIntoBitcoin.com esporta MVRV Z-Score in CSV gratuitamente.</div>
+</div>
+<button class="btn-sm" onclick="sendPrompt('Scrivimi il codice Python completo per scaricare tutti i dati necessari per la tesi: BTC, ETH, SPY, AGG, GLD, DXY, VIX, TNX e T-Bill da yfinance e FRED')">Codice Python data pipeline ↗</button>
+`,
+
+examples: `
+<div class="section-block">
+  <div class="block-title">Come i grandi scrivono ogni sezione — esempi reali</div>
+</div>
+<div class="section-block">
+  <div class="block-num">EXECUTIVE SUMMARY — Standard CoinShares</div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span>Aprono con il numero chiave: "Adding a 5% allocation to Bitcoin to a standard 60/40 portfolio would have increased annualised returns by 2.3 percentage points over the past five years."</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span>Poi il caveat immediato: "This benefit is sensitive to the entry point and rebalancing frequency."</span></div>
+  <div class="content-row"><div class="dot" style="background:#1d9e75"></div><span>Poi l'implicazione: "For risk-aware investors, a 1–3% allocation offers a more conservative entry point while still improving risk-adjusted performance."</span></div>
+</div>
+<div class="section-block">
+  <div class="block-num">METHODOLOGY — Standard VanEck</div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>"We constructed 169 portfolios ranging from 0% to 10% crypto exposure (in 0.5% increments), rebalanced monthly, using daily returns from January 2018 to December 2024."</span></div>
+  <div class="content-row"><div class="dot" style="background:#3266ad"></div><span>"The benchmark is a 60% S&P 500 / 40% US Aggregate Bond portfolio. The risk-free rate used is the 3-month US Treasury Bill yield."</span></div>
+</div>
+<div class="section-block">
+  <div class="block-num">RISULTATI — Standard ARK Invest</div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>"Bitcoin's Sharpe ratio of 1.08 over the period 2020–2024 exceeded that of equities (0.71), gold (0.48), and bonds (-0.12)."</span></div>
+  <div class="content-row"><div class="dot" style="background:#ba7517"></div><span>"However, using the Sortino ratio — which penalises only downside volatility — Bitcoin's advantage widens further, suggesting that standard deviation overstates its risk for long-only investors."</span></div>
+</div>
+<div class="section-block">
+  <div class="block-num">IMPLICATIONS — Standard Goldman Sachs 2026</div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span>"Institutional adoption has accelerated materially post-ETF approval. Bitcoin ETFs reached $115bn AUM by end-2025, with hedge fund participation now a majority of the institutional investor base."</span></div>
+  <div class="content-row"><div class="dot" style="background:#d85a30"></div><span>"We expect digital asset allocations to become a standard line item in institutional portfolio construction over the next 3–5 years, driven by regulatory clarity (MiCA, FIT21) and the maturation of custody infrastructure."</span></div>
+</div>
+<button class="btn-sm" onclick="sendPrompt('Scrivi un esempio completo di Section 4 Module 1 in stile istituzionale con i risultati del portfolio optimization analysis')">Esempio Section 4 completa ↗</button>
+`
+};
+
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['structure','format','writing','data','examples'][i] === id);
+  });
+  document.getElementById('tab-content').innerHTML = tabs[id];
+}
+
+showTab('structure');
+</script>
