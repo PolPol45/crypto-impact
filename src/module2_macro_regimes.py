@@ -348,8 +348,6 @@ def plot_regime_heatmaps(returns: pd.DataFrame, regime_primary: pd.Series) -> Tu
             continue
 
         corr_matrix = regime_returns.corr()
-        corr_matrix.index.name = "Asset_1"
-        corr_matrix.columns.name = "Asset_2"
         sns.heatmap(
             corr_matrix,
             ax=ax,
@@ -365,8 +363,19 @@ def plot_regime_heatmaps(returns: pd.DataFrame, regime_primary: pd.Series) -> Tu
         )
         ax.set_title(f"{regime} Regime Correlations (n={len(regime_returns):,})")
 
-        stacked = corr_matrix.stack().rename("Correlation").reset_index()
-        stacked["Regime"] = regime
+        # Build long table explicitly to avoid pandas axis-name collisions.
+        rows = []
+        for asset_1 in corr_matrix.index:
+            for asset_2 in corr_matrix.columns:
+                rows.append(
+                    {
+                        "Asset_1": asset_1,
+                        "Asset_2": asset_2,
+                        "Correlation": float(corr_matrix.loc[asset_1, asset_2]),
+                        "Regime": regime,
+                    }
+                )
+        stacked = pd.DataFrame(rows)
         heatmap_records.append(stacked)
 
     fig.suptitle(
