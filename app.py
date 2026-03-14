@@ -597,6 +597,18 @@ def _render_home_page() -> None:
     k3.metric("Regime Dependency", "Risk-On", "Best diversification")
     k4.metric("On-Chain Edge", "SOPR Filter", "Reduces drawdown")
 
+    try:
+        with open("report/Executive_Summary_Paolo_Maizza_Digital_Assets.pdf", "rb") as f:
+            st.download_button(
+                label="📥 Download Executive Summary (PDF)",
+                data=f,
+                file_name="Executive_Summary_Paolo_Maizza_Digital_Assets.pdf",
+                mime="application/pdf",
+                help="2-page institutional research summary — shareable with investment committees",
+            )
+    except FileNotFoundError:
+        st.warning("Executive Summary PDF not found. Run: python report/executive_summary.py")
+
     st.info(
         "📌 Disclaimer: This dashboard is for educational and research purposes only. "
         "Not investment advice."
