@@ -291,6 +291,27 @@ def _compute_metrics(ret_series: pd.Series) -> Dict[str, float]:
 
 def _render_existing_portfolio_optimizer_page() -> None:
     st.subheader("Module 1 — Portfolio Optimization")
+    st.markdown("### What is Portfolio Optimization?")
+    st.markdown(
+        """
+Mean-variance optimization (Markowitz, 1952) identifies the portfolio
+that maximizes return for a given level of risk. The **Sharpe ratio** —
+excess return per unit of volatility — is the standard metric used by
+institutional portfolio managers to compare allocations.
+
+**The benchmark** used here is a classic 60/40 portfolio:  
+60% S&P 500 (SPY) + 40% US Aggregate Bonds (AGG).  
+This is the standard starting point for most institutional mandates.
+"""
+    )
+    st.info(
+        """
+**How to read this page:**  
+Use the slider to change the BTC+ETH allocation (0%–10%).  
+Watch how Sharpe, Sortino, and Max Drawdown respond.  
+The optimal point is where the Sharpe ratio peaks — typically around 4%.
+"""
+    )
     alloc_pct = st.slider("BTC+ETH Allocation", min_value=0, max_value=10, value=4, step=1)
 
     with st.spinner("Loading portfolio optimization data..."):
@@ -299,6 +320,19 @@ def _render_existing_portfolio_optimizer_page() -> None:
     fig1 = fig_tab1_metrics(alloc_df, alloc_pct)
     st.pyplot(fig1, use_container_width=True)
     plt.close(fig1)
+
+    with st.expander("📖 What do these metrics mean?"):
+        st.markdown(
+            """
+| Metric | What it measures | Why it matters |
+|--------|-----------------|----------------|
+| **Sharpe Ratio** | Return per unit of total volatility | Higher = better risk-adjusted return. Industry standard for comparing portfolios. |
+| **Sortino Ratio** | Return per unit of *downside* volatility only | More relevant for crypto — penalises losses, not upside swings. |
+| **Calmar Ratio** | Annual return / Maximum Drawdown | Measures recovery efficiency. Preferred by hedge funds. |
+| **Max Drawdown** | Largest peak-to-trough loss | Critical for institutional mandates with drawdown limits. |
+| **VaR 95%** | Daily loss not exceeded 95% of the time | Standard risk measure for regulatory reporting (Basel III). |
+"""
+        )
 
     display_df = alloc_df.copy()
     for col in ["Crypto Total", "BTC Weight", "ETH Weight", "Ann. Return", "Ann. Volatility", "Max Drawdown"]:
@@ -339,10 +373,45 @@ def _render_existing_portfolio_optimizer_page() -> None:
     )
     st.dataframe(styled_alloc, use_container_width=True, height=360)
     st.success("Optimal allocation: 4% — Sharpe +1.9% vs 60/40")
+    st.markdown("### 📌 What does this mean for your portfolio?")
+    st.markdown(
+        """
+- Adding **1–4% BTC+ETH** to a 60/40 portfolio improves the Sharpe ratio
+  without significantly increasing drawdown risk.
+- Beyond **5–6%**, volatility increases faster than return —
+  the risk-return tradeoff deteriorates.
+- **Quarterly rebalancing** captures the rebalancing premium
+  and maintains the target allocation efficiently.
+- The Sortino ratio remains elevated even at higher allocations —
+  suggesting BTC's volatility is predominantly *upside* volatility,
+  not downside risk.
+"""
+    )
 
 
 def _render_existing_macro_regimes_page() -> None:
     st.subheader("Module 2 — Macro Regimes")
+    st.markdown("### Why do macro regimes matter for crypto?")
+    st.markdown(
+        """
+Bitcoin's correlation with traditional assets is **not constant** —
+it shifts dramatically depending on the macroeconomic environment.  
+A portfolio manager who assumes a fixed correlation will
+**misprice the diversification benefit** of crypto.
+
+This analysis classifies every trading day from 2018 to 2026
+into one of 4 regimes, then measures how BTC behaves in each.
+"""
+    )
+    st.info(
+        """
+**How to read this page:**  
+Look at the correlation heatmaps — **blue = low correlation**
+(good for diversification), **red = high correlation** (poor diversification).  
+The rolling correlation chart shows how BTC/SPY correlation
+has evolved over time.
+"""
+    )
     with st.spinner("Loading macro regime data..."):
         _, returns2, _, regime_primary2, corr_by_window2, _ = load_module2_data()
 
@@ -362,9 +431,61 @@ def _render_existing_macro_regimes_page() -> None:
     st.pyplot(fig2b, use_container_width=True)
     plt.close(fig2b)
 
+    with st.expander("📖 What do the 4 regimes mean?"):
+        st.markdown(
+            """
+| Regime | Definition | BTC Behavior | Portfolio Impact |
+|--------|-----------|--------------|-----------------|
+| **Risk-On** | VIX < 20, SPY trending up | Low correlation with bonds and gold. Behaves as growth asset. | Good diversifier — add to position |
+| **Risk-Off** | VIX > 25 (fear spike) | Correlation with SPY rises sharply. "Everything sells off." | Hedge properties weaken — reduce exposure |
+| **Inflation Shock** | CPI > 5% (2021–2022) | Gold-like behavior. Positive real-asset narrative. | Strong diversifier — supports 4–6% allocation |
+| **Rate Hike Cycle** | Fed tightening (2022–2023) | High sensitivity to rate changes. Behaves like long-duration asset. | Caution — reduce to 1–2% |
+"""
+        )
+
+    st.markdown("### 📌 What does this mean for your portfolio?")
+    st.markdown(
+        """
+- **Do not assume crypto always diversifies.** The benefit is
+  regime-dependent — strongest during Risk-On and Inflation,
+  weakest during Risk-Off and Rate Hike cycles.
+- **Monitor VIX as a signal:** when VIX crosses 25, BTC correlation
+  with equities historically rises — reducing the diversification benefit.
+- **The post-ETF period (2024+)** shows declining BTC/SPY correlation
+  as institutional flows mature — a structural shift worth monitoring.
+- **Practical implication:** a dynamic allocation strategy
+  (increase BTC in Risk-On/Inflation, reduce in Risk-Off/Rate Hike)
+  outperforms a static allocation over full cycles.
+"""
+    )
+
 
 def _render_existing_onchain_page() -> None:
     st.subheader("Module 3 — On-Chain Signals")
+    st.markdown("### What are on-chain signals?")
+    st.markdown(
+        """
+On-chain analysis examines **Bitcoin blockchain transaction data**
+to infer the behavior of market participants.  
+Unlike price-based indicators, on-chain signals reveal
+whether holders are selling at a profit or loss —
+a direct measure of market sentiment and cycle positioning.
+
+This is the **unique differentiator** of this framework:  
+no institutional paper (VanEck, ARK, Grayscale)
+uses on-chain signals as a quantitative portfolio risk overlay.
+"""
+    )
+    st.info(
+        """
+**How to read this page:**  
+- **SOPR chart:** orange bands = euphoria periods (SOPR > 1.05)
+  when the model reduces BTC allocation to 1%.  
+- **MVRV Z-Score:** red zone = extreme overvaluation (reduce to 0%),
+  green zone = undervaluation (accumulate).  
+- **Scorecard:** your real-time positioning signal.
+"""
+    )
     with st.spinner("Building on-chain synthetic indicators..."):
         prices3, onchain3 = load_module3_data()
 
@@ -375,6 +496,34 @@ def _render_existing_onchain_page() -> None:
     fig3b = fig_tab3_mvrv(onchain3)
     st.pyplot(fig3b, use_container_width=True)
     plt.close(fig3b)
+
+    with st.expander("📖 What do these indicators mean?"):
+        st.markdown(
+            """
+| Indicator | What it measures | Signal logic | Portfolio action |
+|-----------|-----------------|--------------|-----------------|
+| **SOPR** (Spent Output Profit Ratio) | Are Bitcoin holders selling at a profit or loss? | > 1.05 = euphoria (sellers profit) → **reduce to 1% BTC** | Trim allocation at cycle tops |
+| **MVRV Z-Score** | How far is market cap above realized (cost basis) cap? | > 7.0 = extreme overvaluation → **reduce to 0% BTC** | Exit at historic bubble levels |
+| **Realized Price** | Average purchase price of all BTC in circulation | BTC above realized price = market in profit | Use as dynamic support/resistance |
+"""
+        )
+
+    st.markdown("### 📌 What does this mean for your portfolio?")
+    st.markdown(
+        """
+- **On-chain signals act as a risk overlay** — they do not replace
+  the strategic allocation from Module 1, but improve its timing.
+- The **SOPR filter** historically reduces drawdown during cycle tops
+  while preserving most of the upside by reducing, not eliminating, exposure.
+- The **MVRV Z-Score** has historically peaked above 7 at every major
+  BTC top (2017, 2021) — making it a useful extreme-overvaluation warning.
+- **Practical implementation:** check SOPR and MVRV monthly.
+  If both signal red, reduce BTC to 1–2%. If both signal green,
+  consider increasing toward the 4–5% optimal range.
+- **Limitation:** these signals are based on synthetic calibrated data.
+  For live signals, use Glassnode or LookIntoBitcoin.com.
+"""
+    )
 
     latest = onchain3.index[-1]
     sopr_v = float(onchain3["SOPR_7D"].iloc[-1])
