@@ -36,13 +36,15 @@ warnings.filterwarnings("ignore")
 
 try:
     import yfinance as yf
-except ImportError as exc:
-    raise ImportError("yfinance is required. Install via: pip install yfinance") from exc
+    HAVE_YFINANCE = True
+except ImportError:
+    HAVE_YFINANCE = False
+    print("[INFO] yfinance not found — using synthetic data.")
 
 
 CONFIG = {
     "start_date": "2018-01-01",
-    "end_date": "2026-12-31",
+    "end_date": "2026-03-14",
     "windows": [30, 90, 180],
     "output_dir": "outputs/module2",
 }
@@ -155,6 +157,9 @@ def download_prices() -> pd.DataFrame:
     """
     Download daily close data from Yahoo Finance and align to daily calendar.
     """
+    if not HAVE_YFINANCE:
+        return _synthetic_prices()
+
     print("Downloading data from Yahoo Finance...")
     raw = yf.download(
         list(TICKERS.values()),
@@ -189,6 +194,66 @@ def download_prices() -> pd.DataFrame:
 
     print(
         f"Loaded {len(prices):,} daily rows "
+        f"({prices.index[0].date()} to {prices.index[-1].date()})"
+    )
+    return prices
+
+
+def _synthetic_prices() -> pd.DataFrame:
+    """
+    Synthetic daily market data aligned with module1 GBM assumptions.
+    Includes mean-reverting synthetic VIX with crisis spikes.
+    """
+    idx = pd.date_range(CONFIG["start_date"], CONFIG["end_date"], freq="D")
+    n = len(idx)
+
+    def gbm(s0: float, mu: float, sigma: float, n_obs: int, seed: int) -> np.ndarray:
+        rng = np.random.default_rng(seed)
+        dt = 1 / 365
+        log_ret = (mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * rng.normal(size=n_obs)
+        return s0 * np.exp(np.cumsum(log_ret))
+
+    # Mean-reverting VIX around 18 with crisis-like spikes.
+    rng_vix = np.random.default_rng(7)
+    vix = np.zeros(n, dtype=float)
+    vix[0] = 18.0
+    kappa = 0.10
+    vol = 1.15
+    for i in range(1, n):
+        shock = rng_vix.normal(0.0, vol)
+        vix[i] = vix[i - 1] + kappa * (18.0 - vix[i - 1]) + shock
+
+    vix_series = pd.Series(vix, index=idx)
+
+    def add_spike(series: pd.Series, start: str, end: str, amp: float) -> pd.Series:
+        mask = (series.index >= pd.Timestamp(start)) & (series.index <= pd.Timestamp(end))
+        if mask.sum() == 0:
+            return series
+        x = np.linspace(-np.pi, np.pi, mask.sum())
+        profile = (np.cos(x) + 1.0) / 2.0
+        series.loc[mask] = series.loc[mask] + amp * profile
+        return series
+
+    vix_series = add_spike(vix_series, "2020-03-01", "2020-03-31", 18.0)
+    vix_series = add_spike(vix_series, "2022-11-01", "2022-11-30", 13.0)
+    vix_series = vix_series.clip(lower=9.0, upper=65.0)
+
+    prices = pd.DataFrame(
+        {
+            "BTC": gbm(10_000, 0.60, 0.75, n, 1),
+            "ETH": gbm(800, 0.55, 0.85, n, 2),
+            "SPY": gbm(250, 0.12, 0.18, n, 3),
+            "AGG": gbm(105, 0.02, 0.05, n, 4),
+            "GLD": gbm(120, 0.06, 0.14, n, 5),
+            "DXY": gbm(90, 0.00, 0.07, n, 6),
+            "VIX": vix_series.values,
+        },
+        index=idx,
+    )
+    prices.index.name = "Date"
+
+    print(
+        f"[SYNTHETIC DATA] Loaded {len(prices):,} daily rows "
         f"({prices.index[0].date()} to {prices.index[-1].date()})"
     )
     return prices
