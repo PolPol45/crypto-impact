@@ -1,4 +1,8 @@
 # Digital Assets in Institutional Portfolios
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+
 ### A Multi-Dimensional Investment Research Framework
 
 **Author:** Paolo Maizza | NUS Master in Management  
@@ -14,12 +18,24 @@ ARK Invest (2025), and 21Shares (2024).
 |--------|-------|--------|
 | 1 | Portfolio Optimization & Efficient Frontier | ✅ Complete |
 | 2 | Macro Regime Analysis & Correlations | ✅ Complete |
-| 3 | On-Chain Risk Indicators | 📋 Planned |
+| 3 | On-Chain Risk Indicators | ✅ Complete |
 
-## Key Findings (Module 1)
-- Optimal BTC+ETH allocation: **4%** (2.86% BTC / 1.14% ETH)
-- Sharpe ratio improvement vs 60/40 benchmark: **+1.9%**
+## Key Findings
+
+### Module 1 — Portfolio Optimization
+- Optimal BTC+ETH allocation: **4%** improves Sharpe by **+1.9%** vs 60/40 benchmark
 - Best rebalancing frequency: **Quarterly** (consistent with 21Shares 2024)
+- Sortino ratio peaks at 4% allocation — confirming asymmetric return profile
+
+### Module 2 — Macro Regime Analysis
+- BTC/SPY correlation is **regime-dependent**, not structural
+- Diversification benefit strongest during: **Risk-On** and **Inflation Shock** regimes
+- During **Risk-Off** (VIX > 25): BTC correlation with SPY rises sharply — hedge properties weaken
+
+### Module 3 — On-Chain Risk Signals
+- SOPR-filtered strategy improves Sharpe vs static allocation
+- MVRV Z-Score filter significantly reduces maximum drawdown
+- On-chain signals provide actionable risk overlay for institutional portfolio management
 
 ## Setup
 ```bash
