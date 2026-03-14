@@ -13,7 +13,7 @@ ARK Invest (2025), and 21Shares (2024).
 | Module | Topic | Status |
 |--------|-------|--------|
 | 1 | Portfolio Optimization & Efficient Frontier | ✅ Complete |
-| 2 | Macro Regime Analysis & Correlations | 🔄 In progress |
+| 2 | Macro Regime Analysis & Correlations | ✅ Complete |
 | 3 | On-Chain Risk Indicators | 📋 Planned |
 
 ## Key Findings (Module 1)
