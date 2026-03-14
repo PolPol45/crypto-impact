@@ -174,6 +174,7 @@ def download_prices() -> pd.DataFrame:
     reverse_map = {ticker: name for name, ticker in TICKERS.items()}
     prices = prices.rename(columns=reverse_map)
     prices = prices[[c for c in TICKERS.keys() if c in prices.columns]].sort_index()
+    prices.columns.name = None
     prices.index = pd.to_datetime(prices.index).tz_localize(None)
     prices.index.name = "Date"
 
@@ -347,6 +348,8 @@ def plot_regime_heatmaps(returns: pd.DataFrame, regime_primary: pd.Series) -> Tu
             continue
 
         corr_matrix = regime_returns.corr()
+        corr_matrix.index.name = "Asset_1"
+        corr_matrix.columns.name = "Asset_2"
         sns.heatmap(
             corr_matrix,
             ax=ax,
@@ -362,8 +365,7 @@ def plot_regime_heatmaps(returns: pd.DataFrame, regime_primary: pd.Series) -> Tu
         )
         ax.set_title(f"{regime} Regime Correlations (n={len(regime_returns):,})")
 
-        stacked = corr_matrix.stack().reset_index()
-        stacked.columns = ["Asset_1", "Asset_2", "Correlation"]
+        stacked = corr_matrix.stack().rename("Correlation").reset_index()
         stacked["Regime"] = regime
         heatmap_records.append(stacked)
 
