@@ -1,8 +1,3 @@
-# Python cache/env
 __pycache__/
 *.py[cod]
 .venv/
-
-# Local analysis artifacts (do not version)
-output_module1/
-outputs/

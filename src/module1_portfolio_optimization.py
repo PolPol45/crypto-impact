@@ -58,7 +58,7 @@ CONFIG = {
     "btc_weight_range": np.arange(0.00, 0.105, 0.01),   # 0% to 10%, step 1%
     "n_mc_portfolios": 5_000,        # Monte Carlo random portfolios for cloud
     "rebalance_freqs": ["ME", "QE", "YE"],  # Monthly / Quarterly / Annual (pandas 2.x)
-    "output_dir"   : "output_module1",
+    "output_dir"   : "outputs/module1",
 }
 
 # Asset tickers (yfinance)
