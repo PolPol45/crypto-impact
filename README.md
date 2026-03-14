@@ -3,6 +3,12 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 
+## 📄 Executive Summary (PDF)
+**Visible and downloadable 2-page institutional summary:**
+
+- [Open Executive Summary PDF](report/Executive_Summary_Paolo_Maizza_Digital_Assets.pdf)
+- [Download Executive Summary PDF](https://raw.githubusercontent.com/PolPol45/crypto-impact/main/report/Executive_Summary_Paolo_Maizza_Digital_Assets.pdf)
+
 ### A Multi-Dimensional Investment Research Framework
 
 **Author:** Paolo Maizza | NUS Master in Management  
