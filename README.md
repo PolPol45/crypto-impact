@@ -24,6 +24,18 @@ Primary deliverables:
 
 ---
 
+## Executive Summary
+**Research question:** What is the optimal BTC/ETH allocation in a diversified institutional portfolio, and under which macro regimes does this allocation deliver true risk-adjusted diversification?
+
+**Bottom line (BLUF):** A **4% BTC+ETH allocation** (2.86% BTC / 1.14% ETH) improves the Sharpe ratio of a standard 60/40 portfolio by **+1.9%** over the 2018–2026 sample. The diversification benefit is **regime-dependent**: strongest in Risk-On and Inflation environments, weaker in Risk-Off and Rate Hike regimes. On-chain overlays (SOPR, MVRV Z-score) provide an additional risk-control layer to reduce exposure near cycle extremes.
+
+**Practical implication for portfolio managers:** Treat crypto as a dynamic institutional sleeve:
+1. Set strategic exposure in the **1–4%** range.
+2. Rebalance **quarterly** for implementation discipline.
+3. Adjust tactically using regime and on-chain risk signals.
+
+---
+
 ## Documentation Standard
 The project documentation follows an institutional research-note structure:
 - **BLUF (Bottom Line Up Front)** for immediate decision relevance
