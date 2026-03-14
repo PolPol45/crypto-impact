@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
@@ -57,6 +56,15 @@ def load_module3_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
     prices = m3.build_synthetic_market_data()
     onchain = m3.build_synthetic_onchain(prices)
     return prices, onchain
+
+
+@st.cache_data(show_spinner=False)
+def load_personal_returns() -> pd.DataFrame:
+    try:
+        prices = m1.download_prices()
+    except Exception:
+        prices = m1._synthetic_prices()
+    return m1.compute_returns(prices)
 
 
 # ---------------------------------------------------------------------------
@@ -249,36 +257,39 @@ def _signal_score(signal: str) -> float:
     return 0.0
 
 
-# ---------------------------------------------------------------------------
-# Header + sidebar
-# ---------------------------------------------------------------------------
-left, right = st.columns([6, 2])
-with left:
-    st.title("Digital Assets in Institutional Portfolios")
-    st.markdown("**Paolo Maizza | NUS Master in Management**")
-with right:
-    st.markdown(
-        "[![GitHub Repo](https://img.shields.io/badge/GitHub-PolPol45%2Fcrypto--impact-black?logo=github)]"
-        "(https://github.com/PolPol45/crypto-impact)"
+def _portfolio_returns_from_weights(returns: pd.DataFrame, weights_pct: Dict[str, float]) -> pd.Series:
+    w_eq = weights_pct["equities"] / 100.0
+    w_bd = weights_pct["bonds"] / 100.0
+    w_gd = weights_pct["gold"] / 100.0
+    w_cash = weights_pct["cash"] / 100.0
+    w_btc = weights_pct["btc"] / 100.0
+    w_eth = weights_pct["eth"] / 100.0
+    w_oth = weights_pct["other"] / 100.0
+
+    cash_series = pd.Series(0.0, index=returns.index)
+    # Other crypto proxied with ETH returns as high-beta digital asset proxy.
+    return (
+        w_eq * returns["SPY"]
+        + w_bd * returns["AGG"]
+        + w_gd * returns["GLD"]
+        + w_cash * cash_series
+        + w_btc * returns["BTC"]
+        + w_eth * returns["ETH"]
+        + w_oth * returns["ETH"]
     )
 
-st.sidebar.header("Research Notes")
-st.sidebar.markdown("**Data period:** 2018-01-01 to 2026-03-14")
-st.sidebar.markdown(
-    "**Methodology:** VanEck (2024), ARK Invest (2025), 21Shares (2024), "
-    "institutional mean-variance and regime-based overlays."
-)
-st.sidebar.markdown("**Disclaimer:** Not investment advice.")
-st.sidebar.markdown("[GitHub Repository](https://github.com/PolPol45/crypto-impact)")
+
+def _compute_metrics(ret_series: pd.Series) -> Dict[str, float]:
+    return {
+        "Sharpe": m1.sharpe(ret_series),
+        "Sortino": m1.sortino(ret_series),
+        "Max Drawdown": m1.max_drawdown(ret_series),
+        "Ann. Return": m1.ann_return(ret_series),
+        "Volatility": m1.ann_volatility(ret_series),
+    }
 
 
-# ---------------------------------------------------------------------------
-# Tabs
-# ---------------------------------------------------------------------------
-tab1, tab2, tab3 = st.tabs(["📊 Portfolio Optimizer", "🌍 Macro Regimes", "⛓ On-Chain Signals"])
-
-
-with tab1:
+def _render_existing_portfolio_optimizer_page() -> None:
     st.subheader("Module 1 — Portfolio Optimization")
     alloc_pct = st.slider("BTC+ETH Allocation", min_value=0, max_value=10, value=4, step=1)
 
@@ -294,17 +305,25 @@ with tab1:
         display_df[col] = display_df[col] * 100
 
     display_df = display_df[
-        ["Crypto Total", "BTC Weight", "ETH Weight", "Sharpe Ratio", "Sortino Ratio", "Calmar Ratio",
-         "Ann. Return", "Ann. Volatility", "Max Drawdown", "Optimal"]
+        [
+            "Crypto Total",
+            "BTC Weight",
+            "ETH Weight",
+            "Sharpe Ratio",
+            "Sortino Ratio",
+            "Calmar Ratio",
+            "Ann. Return",
+            "Ann. Volatility",
+            "Max Drawdown",
+            "Optimal",
+        ]
     ]
 
     def _highlight_optimal(row):
         return ["background-color: #fff3b0" if bool(row["Optimal"]) else "" for _ in row]
 
     styled_alloc = (
-        display_df.style
-        .apply(_highlight_optimal, axis=1)
-        .format(
+        display_df.style.apply(_highlight_optimal, axis=1).format(
             {
                 "Crypto Total": "{:.0f}%",
                 "BTC Weight": "{:.2f}%",
@@ -322,7 +341,7 @@ with tab1:
     st.success("Optimal allocation: 4% — Sharpe +1.9% vs 60/40")
 
 
-with tab2:
+def _render_existing_macro_regimes_page() -> None:
     st.subheader("Module 2 — Macro Regimes")
     with st.spinner("Loading macro regime data..."):
         _, returns2, _, regime_primary2, corr_by_window2, _ = load_module2_data()
@@ -344,7 +363,7 @@ with tab2:
     plt.close(fig2b)
 
 
-with tab3:
+def _render_existing_onchain_page() -> None:
     st.subheader("Module 3 — On-Chain Signals")
     with st.spinner("Building on-chain synthetic indicators..."):
         prices3, onchain3 = load_module3_data()
@@ -373,11 +392,435 @@ with tab3:
     )
     scorecard["Risk Score"] = scorecard["Signal"].map(_signal_score)
 
-    styled_scorecard = (
-        scorecard.style
-        .background_gradient(subset=["Risk Score"], cmap="RdYlGn")
-        .format({"Risk Score": "{:.2f}"})
-    )
+    styled_scorecard = scorecard.style.background_gradient(subset=["Risk Score"], cmap="RdYlGn").format({"Risk Score": "{:.2f}"})
 
     st.caption(f"Institutional scorecard as of {latest.date()}")
     st.dataframe(styled_scorecard, use_container_width=True, hide_index=True)
+
+
+def _render_home_page() -> None:
+    st.title("Digital Assets in Institutional Portfolios")
+    st.markdown("### A Multi-Dimensional Investment Research Framework")
+    st.markdown("**Paolo Maizza | NUS Master in Management | March 2026**")
+    st.link_button("Open GitHub Repository", "https://github.com/PolPol45/crypto-impact")
+
+    st.markdown("---")
+    st.subheader("What this dashboard does")
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.markdown("#### 📊 Portfolio Optimization")
+        st.write(
+            "Quantifies the risk-adjusted benefit of adding BTC/ETH "
+            "to a standard 60/40 institutional portfolio. "
+            "Computes Sharpe, Sortino, Calmar ratios across "
+            "allocations from 0% to 10%."
+        )
+
+    with c2:
+        st.markdown("#### 🌍 Macro Regime Analysis")
+        st.write(
+            "Evaluates how BTC correlations with equities, bonds "
+            "and gold shift across 4 macro regimes: Risk-On, "
+            "Risk-Off, Inflation Shock, and Rate Hike cycles. "
+            "Based on 2018–2026 daily data."
+        )
+
+    with c3:
+        st.markdown("#### ⛓ On-Chain Signals")
+        st.write(
+            "Tests whether SOPR and MVRV Z-Score on-chain "
+            "indicators can improve portfolio risk management "
+            "by dynamically reducing BTC exposure at cycle tops."
+        )
+
+    with st.expander("📖 Read before you start"):
+        st.markdown("**Step 1 — Start with Portfolio Optimizer:** use the slider to find your optimal BTC/ETH allocation")
+        st.markdown("**Step 2 — Check Macro Regimes:** understand when crypto diversification works")
+        st.markdown("**Step 3 — Monitor On-Chain Signals:** use the scorecard as a risk overlay")
+        st.markdown("**Step 4 — Set My Portfolio:** enter your actual holdings and see personalized analysis")
+        st.markdown("**Step 5 — Read Technical Summary:** understand the methodology and limitations")
+
+    st.subheader("Key Findings")
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Optimal Allocation", "4%", "+1.9% Sharpe")
+    k2.metric("Best Rebalancing", "Quarterly", "21Shares 2024")
+    k3.metric("Regime Dependency", "Risk-On", "Best diversification")
+    k4.metric("On-Chain Edge", "SOPR Filter", "Reduces drawdown")
+
+    st.info(
+        "📌 Disclaimer: This dashboard is for educational and research purposes only. "
+        "Not investment advice."
+    )
+
+
+def _render_my_portfolio_page() -> None:
+    st.subheader("Enter your current portfolio")
+
+    with st.form("portfolio_form"):
+        st.subheader("Traditional Assets")
+        col1, col2 = st.columns(2)
+        with col1:
+            equities_pct = st.slider("Equities (stocks, ETFs)", 0, 100, 60)
+            bonds_pct = st.slider("Bonds / Fixed Income", 0, 100, 40)
+        with col2:
+            gold_pct = st.slider("Gold / Commodities", 0, 100, 0)
+            cash_pct = st.slider("Cash / Money Market", 0, 100, 0)
+
+        st.subheader("Digital Assets")
+        btc_pct = st.slider("Bitcoin (BTC)", 0, 20, 0)
+        eth_pct = st.slider("Ethereum (ETH)", 0, 20, 0)
+        other_crypto_pct = st.slider("Other Crypto", 0, 20, 0)
+
+        st.subheader("Portfolio Details")
+        portfolio_value = st.number_input("Total Portfolio Value (USD)", min_value=1000, value=100000, step=1000)
+        risk_profile = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"])
+
+        submit = st.form_submit_button("Analyze My Portfolio")
+
+    if not submit:
+        return
+
+    total_alloc = equities_pct + bonds_pct + gold_pct + cash_pct + btc_pct + eth_pct + other_crypto_pct
+    if total_alloc != 100:
+        st.error(f"Allocation must sum to 100%. Current total: {total_alloc}%")
+        return
+
+    st.markdown(f"**Selected risk profile:** {risk_profile}")
+
+    with st.spinner("Computing personalized analytics..."):
+        returns = load_personal_returns()
+
+    user_weights = {
+        "equities": float(equities_pct),
+        "bonds": float(bonds_pct),
+        "gold": float(gold_pct),
+        "cash": float(cash_pct),
+        "btc": float(btc_pct),
+        "eth": float(eth_pct),
+        "other": float(other_crypto_pct),
+    }
+
+    # Suggested optimized allocation: add 4% BTC funded from equities.
+    shift = min(4.0, user_weights["equities"])
+    opt_weights = user_weights.copy()
+    opt_weights["equities"] -= shift
+    opt_weights["btc"] += shift
+
+    ret_user = _portfolio_returns_from_weights(returns, user_weights)
+    ret_opt = _portfolio_returns_from_weights(returns, opt_weights)
+    ret_bmk = 0.60 * returns["SPY"] + 0.40 * returns["AGG"]
+
+    met_user = _compute_metrics(ret_user)
+    met_opt = _compute_metrics(ret_opt)
+    met_bmk = _compute_metrics(ret_bmk)
+
+    st.subheader("Your Portfolio Analysis")
+
+    # 1) Pie charts: current vs suggested
+    m1.set_style()
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    labels = ["Equities", "Bonds", "Gold", "Cash", "BTC", "ETH", "Other Crypto"]
+    colors = [
+        m1.COLORS["SPY"],
+        m1.COLORS["AGG"],
+        m1.COLORS["GLD"],
+        "#BFBFBF",
+        m1.COLORS["BTC"],
+        m1.COLORS["ETH"],
+        "#8A63D2",
+    ]
+
+    user_vals = [equities_pct, bonds_pct, gold_pct, cash_pct, btc_pct, eth_pct, other_crypto_pct]
+    opt_vals = [
+        opt_weights["equities"],
+        opt_weights["bonds"],
+        opt_weights["gold"],
+        opt_weights["cash"],
+        opt_weights["btc"],
+        opt_weights["eth"],
+        opt_weights["other"],
+    ]
+
+    axes[0].pie(user_vals, labels=labels, autopct="%1.0f%%", colors=colors, startangle=90)
+    axes[0].set_title("Current Allocation")
+    axes[1].pie(opt_vals, labels=labels, autopct="%1.0f%%", colors=colors, startangle=90)
+    axes[1].set_title("Suggested Optimized Allocation")
+    st.pyplot(fig, use_container_width=True)
+    plt.close(fig)
+
+    # 2) Metric cards vs benchmark
+    mcol1, mcol2, mcol3 = st.columns(3)
+    mcol1.metric("Sharpe Ratio", f"{met_user['Sharpe']:.3f}", f"{(met_user['Sharpe'] - met_bmk['Sharpe']):+.3f} vs 60/40")
+    mcol2.metric(
+        "Max Drawdown",
+        f"{met_user['Max Drawdown'] * 100:.1f}%",
+        f"{(met_user['Max Drawdown'] - met_bmk['Max Drawdown']) * 100:+.1f}pp vs 60/40",
+    )
+    mcol3.metric(
+        "Estimated Annual Return",
+        f"{met_user['Ann. Return'] * 100:.1f}%",
+        f"{(met_user['Ann. Return'] - met_bmk['Ann. Return']) * 100:+.1f}pp vs 60/40",
+    )
+
+    # 3) Comparison table
+    table = pd.DataFrame(
+        {
+            "Metric": ["Sharpe", "Sortino", "Max Drawdown", "Ann. Return", "Volatility"],
+            "Your Portfolio": [
+                met_user["Sharpe"],
+                met_user["Sortino"],
+                met_user["Max Drawdown"],
+                met_user["Ann. Return"],
+                met_user["Volatility"],
+            ],
+            "60/40 Benchmark": [
+                met_bmk["Sharpe"],
+                met_bmk["Sortino"],
+                met_bmk["Max Drawdown"],
+                met_bmk["Ann. Return"],
+                met_bmk["Volatility"],
+            ],
+            "Optimized (4% BTC)": [
+                met_opt["Sharpe"],
+                met_opt["Sortino"],
+                met_opt["Max Drawdown"],
+                met_opt["Ann. Return"],
+                met_opt["Volatility"],
+            ],
+        }
+    )
+
+    def _fmt_metric(metric: str, value: float) -> str:
+        if metric in {"Max Drawdown", "Ann. Return", "Volatility"}:
+            return f"{value * 100:.2f}%"
+        return f"{value:.3f}"
+
+    table_display = table.copy()
+    for col in ["Your Portfolio", "60/40 Benchmark", "Optimized (4% BTC)"]:
+        table_display[col] = [
+            _fmt_metric(m, v) for m, v in zip(table_display["Metric"], table_display[col])
+        ]
+    st.dataframe(table_display, use_container_width=True, hide_index=True)
+
+    # 4) Personalized recommendation
+    crypto_total = btc_pct + eth_pct + other_crypto_pct
+    if crypto_total == 0:
+        st.warning(
+            "⚠️ Your portfolio has no crypto exposure. Research suggests a 1–4% BTC allocation "
+            "could improve your Sharpe ratio by up to +1.9% based on 2018–2026 data."
+        )
+    elif 0 < crypto_total <= 4:
+        st.success(
+            "✅ Your crypto allocation is within the optimal range (1–4%). "
+            "Consider quarterly rebalancing."
+        )
+    elif 4 < crypto_total <= 8:
+        st.info(
+            "ℹ️ Your crypto allocation exceeds the Sharpe-optimal level. Higher allocations "
+            "increase volatility without proportional return benefit."
+        )
+    else:
+        st.error(
+            "🔴 Your crypto allocation is significantly above optimal. Consider reducing to 3–5% "
+            "to improve risk-adjusted returns."
+        )
+
+    # 5) Dollar breakdown table
+    st.subheader("Your Allocation in Dollar Terms")
+    rows = []
+    asset_map = [
+        ("Equities", "equities"),
+        ("Bonds / Fixed Income", "bonds"),
+        ("Gold / Commodities", "gold"),
+        ("Cash / Money Market", "cash"),
+        ("Bitcoin (BTC)", "btc"),
+        ("Ethereum (ETH)", "eth"),
+        ("Other Crypto", "other"),
+    ]
+
+    for label, key in asset_map:
+        cur_w = user_weights[key]
+        opt_w = opt_weights[key]
+        cur_v = portfolio_value * cur_w / 100.0
+        opt_v = portfolio_value * opt_w / 100.0
+        rows.append(
+            {
+                "Asset": label,
+                "Weight": f"{cur_w:.1f}%",
+                "Value (USD)": f"${cur_v:,.0f}",
+                "Suggested Rebalance": f"${(opt_v - cur_v):+,.0f}",
+            }
+        )
+
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+
+def _render_technical_summary_page() -> None:
+    st.markdown(
+        """
+# Technical Executive Summary
+
+**Digital Assets in Institutional Portfolios: A Multi-Dimensional Framework**  
+Paolo Maizza | NUS Master in Management | March 2026
+
+---
+
+## Research Objective
+This framework quantifies the role of digital assets (BTC/ETH) in institutional 
+portfolio construction across three analytical dimensions: optimal allocation, 
+macro regime behavior, and on-chain risk management.
+
+---
+
+## Module 1 — Portfolio Optimization
+
+**Methodology:** Mean-variance optimization (Markowitz) applied to a 60% SPY / 
+40% AGG benchmark portfolio. 11 portfolio configurations tested (0%–10% crypto 
+in 1% increments), with BTC/ETH split following the VanEck (2024) optimal ratio 
+of 71.4% / 28.6%. Metrics computed: Sharpe ratio, Sortino ratio, Calmar ratio, 
+maximum drawdown, VaR 95%, CVaR 95%. Rebalancing frequency tested: monthly, 
+quarterly, annual, buy-and-hold.
+
+**Basis:** VanEck (2024) "Optimal Crypto Allocation for Portfolios"; 
+ARK Invest (2025) "Measuring Bitcoin's Risk and Reward"; 
+21Shares (2024) "Cryptoassets in a Diversified Portfolio"
+
+**Key Finding:** A 4% BTC+ETH allocation (2.86% BTC / 1.14% ETH) maximizes 
+the Sharpe ratio, improving it by +1.9% relative to the 60/40 benchmark over 
+the 2018–2026 sample period. Quarterly rebalancing yields the best 
+risk-adjusted outcome, consistent with 21Shares (2024).
+
+---
+
+## Module 2 — Macro Regime Analysis
+
+**Methodology:** Four macro regimes defined with rule-based classification: 
+Risk-On (VIX < 20 and SPY above 50-day SMA), Risk-Off (VIX > 25), 
+Inflation Shock (March 2021 – June 2022, US CPI > 5%), Rate Hike Cycle 
+(March 2022 – July 2023, Fed tightening). Rolling Pearson correlations 
+computed at 30, 90, and 180-day windows for BTC vs SPY, AGG, GLD, DXY, VIX.
+
+**Basis:** Fidelity Digital Assets (2025); Goldman Sachs Digital Asset Report 
+(2026); CoinShares Research (2024)
+
+**Key Finding:** BTC diversification benefits are regime-dependent, not 
+structural. Correlation with SPY is lowest during Risk-On and Inflation regimes 
+(genuine diversification), and rises sharply during Risk-Off periods 
+(VIX > 25), undermining the hedge hypothesis under stress conditions.
+
+---
+
+## Module 3 — On-Chain Risk Signals
+
+**Methodology:** Three synthetic on-chain indicators calibrated to historical 
+BTC cycles: SOPR (Spent Output Profit Ratio, mean-reverting around 1.0 with 
+cycle tops/bottoms); MVRV Z-Score (market value vs realized value, range 
+-0.5 to 9.0); Realized Price (180-day EMA × 0.72 as aggregate cost basis). 
+Three portfolio strategies backtested: A) Static 4% BTC; B) SOPR-filtered 
+(reduce to 1% when SOPR 7d avg > 1.05); C) MVRV-filtered (reduce to 0% 
+when MVRV Z > 7.0). Holdings-based backtest with quarterly + signal-triggered 
+rebalancing.
+
+**Basis:** CoinShares Research on-chain methodology; Glassnode (2024) 
+"On-Chain Market Intelligence"
+
+**Key Finding:** On-chain filters provide a meaningful risk management overlay. 
+The SOPR-filtered strategy improves Sharpe ratio vs the static allocation, 
+while the MVRV filter significantly reduces maximum drawdown during cycle tops.
+
+---
+
+## Data Sources & Sample Period
+| Source | Data | Period |
+|--------|------|--------|
+| Yahoo Finance | BTC, ETH, SPY, AGG, GLD, DXY, VIX | Jan 2018 – Mar 2026 |
+| Synthetic GBM | Offline fallback (calibrated to real stats) | Jan 2018 – Mar 2026 |
+| On-chain (synthetic) | SOPR, MVRV Z-Score, Realized Price | Jan 2018 – Mar 2026 |
+
+---
+
+## Limitations
+- Synthetic data used for offline demonstration; live results require 
+  yfinance + real market data
+- Markowitz optimization assumes normally distributed returns; crypto 
+  exhibits fat tails and skewness
+- On-chain signals are simulated, not sourced from live Glassnode data
+- Results are sensitive to the sample period; the post-ETF regime 
+  (Jan 2024 onwards) may alter optimal allocations
+- Past performance does not guarantee future results
+
+---
+
+## References
+- VanEck (2024). "Optimal Crypto Allocation for Portfolios"
+- ARK Invest (2025). "Measuring Bitcoin's Risk and Reward"  
+- 21Shares (2024). "Cryptoassets in a Diversified Portfolio"
+- Fidelity Digital Assets (2025). "The Case for Bitcoin"
+- Grayscale Research (2024). "The Role of Crypto in a Portfolio"
+- Goldman Sachs (2026). "Digital Assets: From Experiment to Asset Class"
+- CoinShares Research (2024). "Digital Asset Fund Flows"
+
+---
+
+*This dashboard is for educational and research purposes only.  
+Not investment advice. Independent research — Paolo Maizza, March 2026.*
+
+---
+"""
+    )
+
+    st.download_button(
+        label="📥 Download Technical Summary (PDF coming soon)",
+        data="See report/Digital_Assets_Institutional_Portfolios_Paolo_Maizza.pdf",
+        file_name="technical_summary_paolo_maizza.txt",
+        mime="text/plain",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Shared header + sidebar nav
+# ---------------------------------------------------------------------------
+left, right = st.columns([6, 2])
+with left:
+    st.title("Digital Assets in Institutional Portfolios")
+    st.markdown("**Paolo Maizza | NUS Master in Management**")
+with right:
+    st.markdown(
+        "[![GitHub Repo](https://img.shields.io/badge/GitHub-PolPol45%2Fcrypto--impact-black?logo=github)]"
+        "(https://github.com/PolPol45/crypto-impact)"
+    )
+
+st.sidebar.header("Research Notes")
+st.sidebar.markdown("**Data period:** 2018-01-01 to 2026-03-14")
+st.sidebar.markdown(
+    "**Methodology:** VanEck (2024), ARK Invest (2025), 21Shares (2024), "
+    "institutional mean-variance and regime-based overlays."
+)
+st.sidebar.markdown("**Disclaimer:** Not investment advice.")
+st.sidebar.markdown("[GitHub Repository](https://github.com/PolPol45/crypto-impact)")
+
+pages = [
+    "🏠 Home",
+    "📊 Portfolio Optimizer",
+    "🌍 Macro Regimes",
+    "⛓ On-Chain Signals",
+    "🎯 My Portfolio",
+    "📄 Technical Summary",
+]
+page = st.sidebar.radio("Navigation", pages, index=0)
+
+
+if page == "🏠 Home":
+    _render_home_page()
+elif page == "📊 Portfolio Optimizer":
+    _render_existing_portfolio_optimizer_page()
+elif page == "🌍 Macro Regimes":
+    _render_existing_macro_regimes_page()
+elif page == "⛓ On-Chain Signals":
+    _render_existing_onchain_page()
+elif page == "🎯 My Portfolio":
+    _render_my_portfolio_page()
+else:
+    _render_technical_summary_page()
