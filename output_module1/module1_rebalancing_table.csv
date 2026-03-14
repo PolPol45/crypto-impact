@@ -1,0 +1,5 @@
+Label,Ann. Return,Ann. Volatility,Sharpe Ratio,Sortino Ratio,Calmar Ratio,Max Drawdown,VaR 95% (daily),CVaR 95% (daily),Rebalancing
+Buy & Hold,0.053380,0.385131,0.021760,0.027116,0.086088,-0.620070,-0.031727,-0.050185,Buy & Hold
+Monthly,0.041391,0.330749,-0.010911,-0.013696,0.065920,-0.627903,-0.027318,-0.042341,Monthly
+Quarterly,0.092004,0.327696,0.143436,0.180449,0.155448,-0.591860,-0.026797,-0.041558,Quarterly
+Annual,0.155432,0.319815,0.345300,0.434681,0.346751,-0.448253,-0.025737,-0.039826,Annual
